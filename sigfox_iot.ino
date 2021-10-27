@@ -78,6 +78,7 @@ void loop()
     Serial.println ("Pasó minuto");
     enviar(caudal_L_m,volumen);
     t1=0;
+    volumen = 0;
     delay(1000);
   }
 }
