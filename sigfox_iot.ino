@@ -12,7 +12,8 @@ long dt=0; //variación de tiempo por cada bucle
 long t0=0; //millis() del bucle anterior
 long t1=0;
 long t2= 0;
-int continuityCounter = 1;
+unsigned int continuityLow = 1;
+unsigned int continuityHigh = 0;
 
 void ContarPulsos ()  
 { 
@@ -32,7 +33,7 @@ int ObtenerFrecuecia()
   return frecuencia;
 }
 
-void enviar(float flow, float volume, int continuity)
+void enviar(float flow, float volume, unsigned int continuityL, unsigned int continuityH)
 {
   Serial.print ("Continuity number: "); 
   Serial.print (continuity); 
@@ -45,7 +46,8 @@ void enviar(float flow, float volume, int continuity)
   mysigfox.initpayload();
   mysigfox.addfloat(flow);
   mysigfox.addfloat(volume);
-  mysigfox.addint(continuity);
+  mysigfox.addint(continuityL); 
+  mysigfox.addint(continuityH); 
   mysigfox.sendmessage();
 }
 
@@ -69,7 +71,7 @@ void loop()
   
   if (digitalRead(boton)==LOW)
   {
-    enviar(caudal_L_m,volumen, continuityCounter);
+    enviar(caudal_L_m,volumen, continuityLow);
     delay(1000);
   }
 
@@ -80,14 +82,18 @@ void loop()
   } 
 
   if ((t0-t2)>=60000 && volumen <= 0) {
-    continuityCounter = 1;
+    continuityLow = 1;
   }
 
   if (t1>0 &&(t0-t1)>=60000){
     t2 = millis();
     //Ya pasó el minuto
     Serial.println ("Pasó minuto");
-    enviar(caudal_L_m,volumen, continuityCounter++);
+    if(continuityLow = 255) {
+      continuityHigh++;
+      continuityLow = 0;
+    }
+    enviar(caudal_L_m,volumen, continuityLow++, continuityHigh);
     t1=0;
     volumen = 0;
     delay(1000);
